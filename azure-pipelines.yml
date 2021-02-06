@@ -14,24 +14,6 @@ jobs:
     vmImage: ubuntu-18.04
   steps:
   - checkout: self
-  - task: SonarCloudPrepare@1
-    displayName: Prepare analysis on SonarCloud
-    inputs:
-      SonarCloud: 9a152823-7c6f-4aa8-a290-3457e881b67a
-      organization: isaacteh
-      scannerMode: CLI
-      configMode: manual
-      cliProjectKey: sonar-chili
-      cliProjectName: chili
-  - task: SonarCloudAnalyze@1
-    displayName: Run Code Analysis
-  - task: SonarCloudPublish@1
-    displayName: Publish Quality Gate Result
-    enabled: False
-  - task: WhiteSource@21
-    displayName: WhiteSource
-    inputs:
-      projectName: chili
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
     inputs:
