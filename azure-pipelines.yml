@@ -36,11 +36,9 @@ jobs:
   - task: SonarCloudPublish@1
     displayName: Publish Quality Gate Result
   - task: sonarcloud-buildbreaker@2
-    displayName: Break build on quality gate failure
-    enabled: False
     inputs:
       SonarCloud: 'SwiftSight'
-      organization: 'isaacteh'           
+      organization: 'isaacteh'          
   - task: Bash@3
     displayName: Bash Script
     inputs:
