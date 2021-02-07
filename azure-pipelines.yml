@@ -14,11 +14,55 @@ jobs:
     vmImage: ubuntu-18.04
   steps:
   - checkout: self
+  - task: UseRubyVersion@0
+  displayName: Use Ruby >= 2.2 <2.6
+  inputs:
+    versionSpec: '>= 2.2 <2.6'
+  - task: WhiteSource@21
+    displayName: WhiteSource
+    inputs:
+      projectName: 123whitesource
+  - task: SonarCloudPrepare@1
+    displayName: Prepare analysis on SonarCloud
+    inputs:
+      SonarCloud: 9a152823-7c6f-4aa8-a290-3457e881b67a
+      organization: isaacteh
+      scannerMode: CLI
+      configMode: manual
+      cliProjectKey: chili
+      cliProjectName: chili
+  - task: SonarCloudAnalyze@1
+    displayName: Run Code Analysis
+  - task: SonarCloudPublish@1
+    displayName: Publish Quality Gate Result
+  - task: sonarcloud-buildbreaker@2
+    displayName: Break build on quality gate failure
+    enabled: False
+    inputs:
+      SonarCloud: 'SwiftSight'
+      organization: 'isaacteh'           
+  - task: Bash@3
+    displayName: Bash Script
+    inputs:
+      targetType: inline
+      script: >-
+        gem install jekyll
+
+        gem install bundler:1.16.6
+
+        bundle install --retry=3 --jobs=4
+
+        bundle exec jekyll b
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+    inputs:
+      SourceFolder: _site
+      TargetFolder: $(Build.ArtifactStagingDirectory)
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
     inputs:
       SourceFolder: test
-      TargetFolder: $(Build.ArtifactStagingDirectory)
+      TargetFolder: $(Build.ArtifactStagingDirectory)      
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: drop'
 ...
