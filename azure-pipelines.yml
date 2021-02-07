@@ -38,7 +38,8 @@ jobs:
   - task: sonarcloud-buildbreaker@2
     inputs:
       SonarCloud: 'SwiftSight'
-      organization: 'isaacteh'          
+      organization: 'isaacteh'
+    enabled: false          
   - task: Bash@3
     displayName: Bash Script
     inputs:
