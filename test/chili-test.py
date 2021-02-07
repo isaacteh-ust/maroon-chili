@@ -19,7 +19,7 @@ class TestTest():
     self.driver.quit()
   
   def test_test(self):
-    self.driver.get("http://127.0.0.1:4000")    
+    self.driver.get("http://172.17.0.1:8080")    
     print('open the site')
     self.driver.save_screenshot("home.png")
     self.driver.find_element_by_xpath('//*[@id="main-navigation"]/div/ul/li[2]').click()
