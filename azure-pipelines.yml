@@ -15,9 +15,9 @@ jobs:
   steps:
   - checkout: self
   - task: UseRubyVersion@0
-  displayName: Use Ruby >= 2.2 <2.6
-  inputs:
-    versionSpec: '>= 2.2 <2.6'
+    displayName: Use Ruby >= 2.2 <2.6
+    inputs:
+      versionSpec: '>= 2.2 <2.6'
   - task: WhiteSource@21
     displayName: WhiteSource
     inputs:
