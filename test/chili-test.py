@@ -25,10 +25,4 @@ class TestTest():
     self.driver.get("http://172.17.0.1:8080")    
     print('open the site')
     self.driver.save_screenshot("home.png")
-    self.driver.find_element_by_xpath('//*[@id="main-navigation"]/div/ul/li[2]').click()
-    print('open docs')
-    self.driver.save_screenshot("docs.png")
-    self.driver.find_element_by_xpath('//*[@id="docs-menu"]/li[2]').click()
-    print('open about')
-    self.driver.save_screenshot("about.png")
   
