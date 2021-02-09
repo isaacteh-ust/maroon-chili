@@ -58,7 +58,7 @@ jobs:
   - task: Bash@3
     inputs:
       targetType: 'inline'
-      script: 'docker run --rm --volume="$PWD/drop:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4'
+      script: 'docker run --rm --volume="$PWD/_site:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4'
   - task: Bash@3
     inputs:
       targetType: 'inline'
