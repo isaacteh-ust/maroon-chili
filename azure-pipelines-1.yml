@@ -24,8 +24,11 @@ jobs:
       targetType: inline
       script: >-
         gem install jekyll
+
         gem install bundler:1.16.6
+
         bundle install --retry=3 --jobs=4
+        
         bundle exec jekyll b
   - task: DockerInstaller@0
     inputs:
