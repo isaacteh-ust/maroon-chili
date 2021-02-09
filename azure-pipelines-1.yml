@@ -27,7 +27,7 @@ jobs:
 
         gem install bundler:1.16.6
 
-        bundle install
+        bundle install --retry=3 --jobs=4
 
         jekyll build
   - task: DockerInstaller@0
