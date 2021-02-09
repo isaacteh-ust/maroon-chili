@@ -58,13 +58,14 @@ jobs:
   - task: Bash@3
     inputs:
       targetType: 'inline'
-      script: 'docker run --rm --volume="$PWD/_site:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4'
+      script: |
+        ls -lrt
+        pwd
+        'docker run --rm --volume="$PWD/_site:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4'
   - task: Bash@3
     inputs:
       targetType: 'inline'
       script: |
-        ls -lrt
-        pwd
         chmod -R 777  ./
         docker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -t http://172.17.0.1:8080 -g gen.conf -x OWASP-ZAP-Report.xml -r scan-report.html
         true
