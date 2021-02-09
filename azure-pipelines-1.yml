@@ -37,6 +37,9 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
+        ls -lrt
+        pwd
+        echo "$(pwd)/_site"
         docker run --rm --volume="$(pwd)/_site:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4
         curl -v http://172.17.0.1:8080
   - task: Bash@3
