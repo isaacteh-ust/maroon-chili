@@ -1,0 +1,56 @@
+trigger:
+  branches:
+    include:
+    - master
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: master
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    vmImage: ubuntu-18.04
+  steps:
+  - checkout: self
+  - task: UseRubyVersion@0
+    displayName: Use Ruby >= 2.2 <2.6
+    inputs:
+      versionSpec: '>= 2.2 <2.6'         
+  - task: Bash@3
+    displayName: Bash Script
+    inputs:
+      targetType: inline
+      script: >-
+        gem install jekyll
+        gem install bundler:1.16.6
+        bundle install --retry=3 --jobs=4
+        bundle exec jekyll b
+  - task: DockerInstaller@0
+    inputs:
+      dockerVersion: '17.09.0-ce'
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: 'docker run --rm --volume="$(pwd)/_site:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4'
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: |
+        chmod -R 777  ./
+        docker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -t http://172.17.0.1:8080 -g gen.conf -x OWASP-ZAP-Report.xml -r scan-report.html
+        true
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+    inputs:
+      SourceFolder: _site
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+    inputs:
+      SourceFolder: test
+      TargetFolder: $(Build.ArtifactStagingDirectory)      
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+...
