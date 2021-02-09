@@ -28,7 +28,7 @@ jobs:
         gem install bundler:1.16.6
 
         bundle install --retry=3 --jobs=4
-        
+
         bundle exec jekyll b
   - task: DockerInstaller@0
     inputs:
@@ -36,7 +36,9 @@ jobs:
   - task: Bash@3
     inputs:
       targetType: 'inline'
-      script: 'docker run --rm --volume="$(pwd)/_site:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4'
+      script: |
+        docker run --rm --volume="$(pwd)/_site:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4
+        curl -v http://172.17.0.1:8080
   - task: Bash@3
     inputs:
       targetType: 'inline'
