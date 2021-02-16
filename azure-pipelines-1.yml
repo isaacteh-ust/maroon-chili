@@ -108,28 +108,50 @@ stages:
           testResultsFormat: 'NUnit'
           testResultsFiles: 'Converted-OWASP-ZAP-Report.xml'
         displayName: 'DAST - Publish Report'        
-      - task: Npm@1
+
+    #  - task: Npm@1
+    #    inputs:
+    #      command: 'install'
+    #      workingDir: '$(System.DefaultWorkingDirectory)'
+    #    displayName: 'UI Test - Npm install'
+    #  - task: CmdLine@2
+    #    inputs:
+    #      script: |
+    #        wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
+    #        unzip chromedriver_linux64.zip
+    #        sudo mv chromedriver /usr/bin
+    #        rm chromedriver_linux64.zip
+    #    displayName: 'UI Test - Install Chromedriver'
+    #  - task: CmdLine@2
+    #    inputs:
+    #      script: 'npm test'
+    #    displayName: 'UI Test - Run UI Test'
+    #  - task: PublishTestResults@2
+    #    inputs:
+    #      testResultsFormat: 'JUnit'
+    #      testResultsFiles: 'test-results.xml'
+    #    displayName: 'UI Test - Publish Result'
+
+      - task: UsePythonVersion@0
         inputs:
-          command: 'install'
-          workingDir: '$(System.DefaultWorkingDirectory)'
-        displayName: 'UI Test - Npm install'
+          versionSpec: '3.x'
+          addToPath: true
+          architecture: 'x64'
       - task: CmdLine@2
         inputs:
           script: |
-            wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
-            unzip chromedriver_linux64.zip
-            sudo mv chromedriver /usr/bin
-            rm chromedriver_linux64.zip
-        displayName: 'UI Test - Install Chromedriver'
+            python -m pip install --upgrade pip
+            pip install selenium pytest pytest-cov
+            pip install webdriver-manager
       - task: CmdLine@2
         inputs:
-          script: 'npm test'
-        displayName: 'UI Test - Run UI Test'
+          script: 'pytest "$(pwd)/test/chili-test.py" --junitxml=junit/test-results.xml'
+        displayName: Pytest
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: 'JUnit'
-          testResultsFiles: 'test-results.xml'
-        displayName: 'UI Test - Publish Result'
+          testResultsFiles: 'junit/test-results.xml'       
+
       - task: CopyFiles@2
         displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
         inputs:
@@ -139,3 +161,4 @@ stages:
         displayName: 'Artifact - Publish Artifact: drop'
         inputs:
           ArtifactName: drop        
+                    
