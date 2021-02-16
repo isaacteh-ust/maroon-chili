@@ -17,43 +17,42 @@ pool:
   vmImage: 'ubuntu-18.04'
 
 stages:
-- stage: Build_Stage
-  displayName: 'Build Stage'
+- stage: Build
   jobs:
-  - job: SSG_Jekyll
-    displayName: 'SSG Jekyll'
-    steps: 
-    - task: UseRubyVersion@0
-      inputs:
-        versionSpec: '>= 2.2 < 2.6'
-      displayName: 'Build - Install Ruby'
-    - task: CmdLine@2
-      displayName: 'Build - Bundle install'
-      inputs:
-        script: |
-          gem install jekyll
-          gem install bundler:1.16.6
-    - task: CmdLine@2
-      displayName: 'Build - Jekyll build'
-      inputs:
-        script: |
-          bundle install --retry=3 --jobs=4
-          bundle exec jekyll b -d public
-    condition: eq(variables.SSG, 'jekyll')
-  - job: SSG_Gatsby
-    steps: 
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '12.x'
-    - script: |
-        npm install -g gatsby-cli
-        npm install
-      displayName: 'npm install'
-    - script: | 
-        gatsby build
-      displayName: 'gatsby build'      
-    condition: eq(variables.SSG, 'gatsby')    
-  - job: SAST_Scan  
+  - job: Job_1
+    steps:
+      - task: UseRubyVersion@0
+        inputs:
+          versionSpec: '>= 2.2 < 2.6'
+        displayName: 'Build - Install Ruby'
+        condition: eq(variables.SSG, 'jekyll')
+      - task: CmdLine@2
+        displayName: 'Build - Bundle install'
+        inputs:
+          script: |
+            gem install jekyll
+            gem install bundler:1.16.6
+        condition: eq(variables.SSG, 'jekyll')    
+      - task: CmdLine@2
+        displayName: 'Build - Jekyll build'
+        inputs:
+          script: |
+            bundle install --retry=3 --jobs=4
+            bundle exec jekyll b -d public
+        condition: eq(variables.SSG, 'jekyll')
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '12.x'
+        condition: eq(variables.SSG, 'gatsby')  
+      - script: |
+          npm install -g gatsby-cli
+          npm install
+        displayName: 'npm install'
+        condition: eq(variables.SSG, 'gatsby')
+      - script: | 
+          gatsby build
+        displayName: 'gatsby build'  
+        condition: eq(variables.SSG, 'gatsby')          
     steps:           
     - task: SonarCloudPrepare@1
       inputs:
@@ -61,8 +60,8 @@ stages:
         organization: 'isaacteh'
         scannerMode: 'CLI'
         configMode: 'manual'
-        cliProjectKey: variables.PROJECT_NAME
-        cliProjectName: variables.PROJECT_NAME
+        cliProjectKey: ${{ variables.PROJECT_NAME }}
+        cliProjectName: ${{ variables.PROJECT_NAME }}
         cliSources: '.'
       displayName: 'SAST - SonarCloud Prepare'
     - task: SonarCloudAnalyze@1
