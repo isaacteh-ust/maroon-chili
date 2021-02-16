@@ -47,6 +47,9 @@ stages:
         npm install -g gatsby-cli
         npm install
       displayName: 'npm install'
+    - script: | 
+        gatsby build
+      displayName: 'gatsby build'      
     condition: eq(variables.SSG, 'gatsby')    
     
     
