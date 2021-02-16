@@ -11,7 +11,7 @@ variables:
     value: 'aws'
 
   - name: 'SSG'
-    value: 'gatsby'
+    value: 'jekyll'
 
 pool:
   vmImage: 'ubuntu-18.04'
@@ -19,7 +19,7 @@ pool:
 stages:
 - stage:
   jobs:
-  - job: 
+  - job: Jekyll
     steps: 
     - task: UseRubyVersion@0
       inputs:
@@ -38,3 +38,15 @@ stages:
           bundle install --retry=3 --jobs=4
           bundle exec jekyll b
     condition: eq(variables.SSG, 'jekyll')
+  - job: Gatsby
+    steps: 
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '12.x'
+    - script: |
+        npm install -g gatsby-cli
+        npm install
+      displayName: 'npm install'
+    condition: eq(variables.SSG, 'gatsby')    
+    
+    
