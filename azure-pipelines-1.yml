@@ -11,7 +11,7 @@ variables:
     value: 'aws'
 
   - name: 'SSG'
-    value: 'jekyll'
+    value: 'gatsby'
 
 pool:
   vmImage: 'ubuntu-18.04'
