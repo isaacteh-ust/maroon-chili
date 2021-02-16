@@ -43,15 +43,16 @@ stages:
       - task: NodeTool@0
         inputs:
           versionSpec: '12.x'
+        displayName: 'Build - Install Node'  
         condition: eq(variables.SSG, 'gatsby')  
       - script: |
           npm install -g gatsby-cli
           npm install
-        displayName: 'npm install'
+        displayName: 'Build - Npm Install'
         condition: eq(variables.SSG, 'gatsby')
       - script: | 
           gatsby build
-        displayName: 'gatsby build'  
+        displayName: 'Build - Gatsby Build'  
         condition: eq(variables.SSG, 'gatsby')                       
       - task: SonarCloudPrepare@1
         inputs:
@@ -72,7 +73,8 @@ stages:
       - task: sonarcloud-buildbreaker@2
         inputs:
           SonarCloud: 'SwiftSight'
-          organization: 'isaacteh'    
+          organization: 'isaacteh' 
+        displayName: 'SAST - SonarCloud Breaker'     
       - task: DockerInstaller@0
         inputs:
           dockerVersion: '17.09.0-ce'
