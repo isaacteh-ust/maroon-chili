@@ -11,15 +11,17 @@ variables:
     value: 'aws'
 
   - name: 'SSG'
-    value: 'gatsby'
+    value: 'jekyll'
 
 pool:
   vmImage: 'ubuntu-18.04'
 
 stages:
-- stage:
+- stage: Build_Stage
+  displayName: 'Build Stage'
   jobs:
-  - job: Jekyll
+  - job: SSG_Jekyll
+    displayName: 'SSG Jekyll'
     steps: 
     - task: UseRubyVersion@0
       inputs:
@@ -36,9 +38,9 @@ stages:
       inputs:
         script: |
           bundle install --retry=3 --jobs=4
-          bundle exec jekyll b
+          bundle exec jekyll b -d public
     condition: eq(variables.SSG, 'jekyll')
-  - job: Gatsby
+  - job: SSG_Gatsby
     steps: 
     - task: NodeTool@0
       inputs:
@@ -51,5 +53,95 @@ stages:
         gatsby build
       displayName: 'gatsby build'      
     condition: eq(variables.SSG, 'gatsby')    
-    
-    
+  - job: SAST_Scan  
+    steps:           
+    - task: SonarCloudPrepare@1
+      inputs:
+        SonarCloud: 'SwiftSight'
+        organization: 'isaacteh'
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: variables.PROJECT_NAME
+        cliProjectName: variables.PROJECT_NAME
+        cliSources: '.'
+      displayName: 'SAST - SonarCloud Prepare'
+    - task: SonarCloudAnalyze@1
+      displayName: 'SAST - SonarCloud Analyze'
+    - task: SonarCloudPublish@1
+      inputs:
+        pollingTimeoutSec: '300'
+      displayName: SAST - SonarCloud Publish
+    - task: sonarcloud-buildbreaker@2
+      inputs:
+        SonarCloud: 'SwiftSight'
+        organization: 'isaacteh'    
+  - job: DAST_Scan
+    steps:
+    - task: DockerInstaller@0
+      inputs:
+        dockerVersion: '17.09.0-ce'
+      displayName: 'DAST - Install Docker'
+    - task: CmdLine@2
+      displayName: 'DAST - Deploy to Docker Container'
+      inputs:
+        script: |
+          chmod -R 777 $(pwd)/public
+          docker run --rm --volume="$(pwd)/public:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4
+          netstat -tlpen | grep 8080
+          curl -v http://172.17.0.1:8080 --retry 3
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: "chmod -R 777  ./\ndocker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t http://172.17.0.1:8080 -g gen.conf -x OWASP-ZAP-Report.xml -r scan-report.html\ntrue \n"
+      displayName: 'DAST - OWASP Scan'
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+          $XslPath = "$($Env:SYSTEM_DEFAULTWORKINGDIRECTORY)/test/OWASPToNUnit3.xslt"
+          $XmlInputPath = "$($Env:SYSTEM_DEFAULTWORKINGDIRECTORY)/OWASP-ZAP-Report.xml"
+          $XmlOutputPath = "$($Env:SYSTEM_DEFAULTWORKINGDIRECTORY)/Converted-OWASP-ZAP-Report.xml"
+          $XslTransform = New-Object System.Xml.Xsl.XslCompiledTransform
+          $XslTransform.Load($XslPath)
+          $XslTransform.Transform($XmlInputPath, $XmlOutputPath)
+      displayName: 'DAST - Convert Report to NUnit type file'
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'NUnit'
+        testResultsFiles: 'Converted-OWASP-ZAP-Report.xml'
+      displayName: 'DAST - Publish Report'    
+  - job: UI_Test
+    steps:      
+    - task: Npm@1
+      inputs:
+        command: 'install'
+        workingDir: '$(System.DefaultWorkingDirectory)'
+      displayName: 'UI Test - Npm install'
+    - task: CmdLine@2
+      inputs:
+        script: |
+          wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
+          unzip chromedriver_linux64.zip
+          sudo mv chromedriver /usr/bin
+          rm chromedriver_linux64.zip
+      displayName: 'UI Test - Install Chromedriver'
+    - task: CmdLine@2
+      inputs:
+        script: 'npm test'
+      displayName: 'UI Test - Run UI Test'
+  - job: Collect_Artifact
+    steps:
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'test-results.xml'
+      displayName: 'UI Test - Publish Result'
+    - task: CopyFiles@2
+      displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
+      inputs:
+        SourceFolder: public
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+    - task: PublishBuildArtifacts@1
+      displayName: 'Artifact - Publish Artifact: drop'
+      inputs:
+        ArtifactName: drop      
