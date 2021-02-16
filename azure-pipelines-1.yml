@@ -28,7 +28,7 @@ stages:
     - task: SonarCloudPrepare@1
       inputs:
         SonarCloud: 'Sonarcloud'
-        organization: 'ustdigital'
+        organization: 'isaacteh-ust'
         scannerMode: 'CLI'
         configMode: 'manual'
         cliProjectKey: 'maroon-chili'
@@ -44,7 +44,7 @@ stages:
     - task: sonarcloud-buildbreaker@2
       inputs:
         SonarCloud: 'Sonarcloud'
-        organization: 'ustdigital'
+        organization: 'isaacteh-ust'
       displayName: 'SAST - SonarCloud Breaker'
     - task: DockerInstaller@0
       inputs:
