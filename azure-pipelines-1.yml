@@ -13,13 +13,14 @@ variables:
   - name: 'SSG'
     value: 'jekyll'
 
+pool:
+  vmImage: 'ubuntu-18.04'
+
 stages:
-- stage: __default
+- stage:
   jobs:
-  - job: Job
-    pool:
-      vmImage: 'ubuntu-18.04'
-    steps:
+  - job: SSG Build
+    steps: 
     - task: UseRubyVersion@0
       inputs:
         versionSpec: '>= 2.2 < 2.6'
@@ -34,90 +35,6 @@ stages:
       displayName: 'Build - Jekyll build'
       inputs:
         script: |
-          bundle install
-          jekyll build
-    - task: SonarCloudPrepare@1
-      inputs:
-        SonarCloud: 'SwiftSight'
-        organization: 'isaacteh'
-        scannerMode: 'CLI'
-        configMode: 'manual'
-        cliProjectKey: variables.PROJECT_NAME
-        cliProjectName: variables.PROJECT_NAME
-        cliSources: '.'
-      displayName: 'SAST - SonarCloud Prepare'
-    - task: SonarCloudAnalyze@1
-      displayName: 'SAST - SonarCloud Analyze'
-    - task: SonarCloudPublish@1
-      inputs:
-        pollingTimeoutSec: '300'
-      displayName: SAST - SonarCloud Publish
-    - task: sonarcloud-buildbreaker@2
-      inputs:
-        SonarCloud: 'SwiftSight'
-        organization: 'isaacteh'
-    - task: DockerInstaller@0
-      inputs:
-        dockerVersion: '17.09.0-ce'
-      displayName: 'DAST - Install Docker'
-    - task: CmdLine@2
-      displayName: 'DAST - Deploy to Docker Container'
-      inputs:
-        script: |
-          chmod -R 777 $(pwd)/_site
-          docker run --rm --volume="$(pwd)/_site:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4
-          netstat -tlpen | grep 8080
-          curl -v http://172.17.0.1:8080 --retry 3
-    - task: Bash@3
-      inputs:
-        targetType: 'inline'
-        script: "chmod -R 777  ./\ndocker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t http://172.17.0.1:8080 -g gen.conf -x OWASP-ZAP-Report.xml -r scan-report.html\ntrue \n"
-      displayName: 'DAST - OWASP Scan'
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: |
-          $XslPath = "$($Env:SYSTEM_DEFAULTWORKINGDIRECTORY)/test/OWASPToNUnit3.xslt"
-          $XmlInputPath = "$($Env:SYSTEM_DEFAULTWORKINGDIRECTORY)/OWASP-ZAP-Report.xml"
-          $XmlOutputPath = "$($Env:SYSTEM_DEFAULTWORKINGDIRECTORY)/Converted-OWASP-ZAP-Report.xml"
-          $XslTransform = New-Object System.Xml.Xsl.XslCompiledTransform
-          $XslTransform.Load($XslPath)
-          $XslTransform.Transform($XmlInputPath, $XmlOutputPath)
-      displayName: 'DAST - Convert Report to NUnit type file'
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFormat: 'NUnit'
-        testResultsFiles: 'Converted-OWASP-ZAP-Report.xml'
-      displayName: 'DAST - Publish Report'
-    - task: Npm@1
-      inputs:
-        command: 'install'
-        workingDir: '$(System.DefaultWorkingDirectory)'
-      displayName: 'UI Test - Npm install'
-    - task: CmdLine@2
-      inputs:
-        script: |
-          wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/bin
-          rm chromedriver_linux64.zip
-      displayName: 'UI Test - Install Chromedriver'
-    - task: CmdLine@2
-      inputs:
-        script: 'npm test'
-      displayName: 'UI Test - Run UI Test'
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFormat: 'JUnit'
-        testResultsFiles: 'test-results.xml'
-      displayName: 'UI Test - Publish Result'
-    - task: CopyFiles@2
-      displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
-      inputs:
-        SourceFolder: _site
-        TargetFolder: $(Build.ArtifactStagingDirectory)
-    - task: PublishBuildArtifacts@1
-      displayName: 'Artifact - Publish Artifact: drop'
-      inputs:
-        ArtifactName: drop
-
+          bundle install --retry=3 --jobs=4
+          bundle exec jekyll b
+    condition: eq(variables.SSG, 'jekyll')
