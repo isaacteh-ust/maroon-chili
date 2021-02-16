@@ -19,7 +19,7 @@ pool:
 stages:
 - stage:
   jobs:
-  - job: SSG Build
+  - job: 'SSG Build'
     steps: 
     - task: UseRubyVersion@0
       inputs:
