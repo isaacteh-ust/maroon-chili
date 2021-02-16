@@ -19,8 +19,8 @@ pool:
 stages:
 - stage:
   jobs:
-  - job: 'SSG Build'
-    steps: 
+  - job: 
+    steps: SSG Build
     - task: UseRubyVersion@0
       inputs:
         versionSpec: '>= 2.2 < 2.6'
