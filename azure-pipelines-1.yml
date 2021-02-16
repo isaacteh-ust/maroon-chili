@@ -164,7 +164,7 @@ stages:
   
 - stage: Release
   jobs:
-    - job:
+    - job: Deploy to AWS
       steps:
       - task: DownloadBuildArtifacts@0
         inputs:
