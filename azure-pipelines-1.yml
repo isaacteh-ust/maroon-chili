@@ -161,4 +161,13 @@ stages:
         displayName: 'Artifact - Publish Artifact: drop'
         inputs:
           ArtifactName: drop        
-                    
+  
+- stage: Deploy
+  jobs:
+    - job:
+      steps:
+      - task: CmdLine@2
+        inputs:
+          script: 'curl -X POST -d {} "https://webhooks.amplify.ap-southeast-1.amazonaws.com/prod/webhooks?id=31cec3c0-f9fd-414d-b6d8-d3eef0572d9b&token=se6pzDqRP9Tsm4zvYhB0yfX69syZC03HBefPLeP9nMM&operation=startbuild" -H "Content-Type:application/json"'
+        displayName: Deploy to AWS 
+                      
