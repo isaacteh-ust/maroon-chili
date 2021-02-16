@@ -27,7 +27,7 @@ stages:
           jekyll build
     - task: SonarCloudPrepare@1
       inputs:
-        SonarCloud: 'Sonarcloud'
+        SonarCloud: 'SwiftSight'
         organization: 'isaacteh'
         scannerMode: 'CLI'
         configMode: 'manual'
@@ -43,9 +43,8 @@ stages:
       displayName: SAST - SonarCloud Publish
     - task: sonarcloud-buildbreaker@2
       inputs:
-        SonarCloud: 'Sonarcloud'
+        SonarCloud: 'SwiftSight'
         organization: 'isaacteh'
-      displayName: 'SAST - SonarCloud Breaker'
     - task: DockerInstaller@0
       inputs:
         dockerVersion: '17.09.0-ce'
