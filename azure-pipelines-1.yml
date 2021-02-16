@@ -20,7 +20,7 @@ stages:
 - stage:
   jobs:
   - job: 
-    steps: SSG Build
+    steps: 
     - task: UseRubyVersion@0
       inputs:
         versionSpec: '>= 2.2 < 2.6'
