@@ -19,7 +19,7 @@ pool:
 stages:
 - stage:
   jobs:
-  - job: SSG - Jekyll
+  - job: Jekyll
     steps: 
     - task: UseRubyVersion@0
       inputs:
@@ -38,7 +38,7 @@ stages:
           bundle install --retry=3 --jobs=4
           bundle exec jekyll b
     condition: eq(variables.SSG, 'jekyll')
-  - job: SSG - Gatsby
+  - job: Gatsby
     steps: 
     - task: NodeTool@0
       inputs:
