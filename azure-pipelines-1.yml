@@ -169,13 +169,9 @@ stages:
   jobs:
     - job: Validation
       displayName: Release
-      steps:
-      - task: DownloadBuildArtifacts@0
-        inputs:
-          buildType: 'current'
-          downloadType: 'specific'
-          downloadPath: '$(System.ArtifactsDirectory)'
-        displayName: Download Artifact  
+      pool: server    
+      timeoutInMinutes: 4320 # job times out in 3 days   
+      steps:   
       - task: ManualValidation@0
         timeoutInMinutes: 2880 # task times out in 1 day
         inputs:
