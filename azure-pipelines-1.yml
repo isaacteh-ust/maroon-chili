@@ -137,20 +137,23 @@ stages:
           versionSpec: '3.x'
           addToPath: true
           architecture: 'x64'
+        displayName: UI Test - Install Python  
       - task: CmdLine@2
         inputs:
           script: |
             python -m pip install --upgrade pip
             pip install selenium pytest pytest-cov
             pip install webdriver-manager
+        displayName: UI Test - Install Chromedriver   
       - task: CmdLine@2
         inputs:
           script: 'pytest "$(pwd)/test/chili-test.py" --junitxml=junit/test-results.xml'
-        displayName: Pytest
+        displayName: UI Test - Run UI Test
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: 'JUnit'
-          testResultsFiles: 'junit/test-results.xml'       
+          testResultsFiles: 'junit/test-results.xml'
+        displayName: UI Test - Publish Result    
 
       - task: CopyFiles@2
         displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
