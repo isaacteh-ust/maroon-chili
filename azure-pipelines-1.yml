@@ -167,8 +167,8 @@ stages:
   
 - stage: Release
   jobs:
-    - job: Deploy_to_AWS
-      displayName: Deploy to AWS
+    - job: Validation
+      displayName: Release
       steps:
       - task: DownloadBuildArtifacts@0
         inputs:
@@ -176,19 +176,14 @@ stages:
           downloadType: 'specific'
           downloadPath: '$(System.ArtifactsDirectory)'
         displayName: Download Artifact  
-    - job: waitForValidation
-      displayName: Wait for external validation  
-      pool: server    
-      timeoutInMinutes: 4320 # job times out in 3 days
-      steps:   
       - task: ManualValidation@0
-        timeoutInMinutes: 1440 # task times out in 1 day
+        timeoutInMinutes: 2880 # task times out in 1 day
         inputs:
-            notifyUsers: someone@example.com
+            notifyUsers: isaac.teh@ust-global.com
             instructions: 'Please validate the build configuration and resume'
-            onTimeout: 'resume'
-    - job: myPostValidationJob
-      steps:       
+            onTimeout: 'resume'   
+    - job: Deploy to AWS  
+      steps:
       - task: CmdLine@2
         inputs:
           script: 'curl -X POST -d {} "https://webhooks.amplify.ap-southeast-1.amazonaws.com/prod/webhooks?id=31cec3c0-f9fd-414d-b6d8-d3eef0572d9b&token=se6pzDqRP9Tsm4zvYhB0yfX69syZC03HBefPLeP9nMM&operation=startbuild" -H "Content-Type:application/json"'
