@@ -178,7 +178,8 @@ stages:
             notifyUsers: isaac.teh@ust-global.com
             instructions: 'Please validate the build configuration and resume'
             onTimeout: 'resume'   
-    - job: Deploy to AWS  
+    - job: DeploytoAWS
+      displayName: Deploy to AWS  
       steps:
       - task: CmdLine@2
         inputs:
