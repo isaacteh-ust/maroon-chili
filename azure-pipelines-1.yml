@@ -87,7 +87,7 @@ stages:
     condition: |
       and
       (
-        eq(dependencies.GatsbyBuild.result, 'Succeeded', 'Skipped'),
+        eq(dependencies.GatsbyBuild.result, 'Succeeded'),
         in(dependencies.JekyllBuild.result, 'Succeeded', 'Skipped')
       )
     steps:
