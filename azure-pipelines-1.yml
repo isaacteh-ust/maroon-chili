@@ -198,30 +198,30 @@ stages:
           testResultsFiles: 'junit/test-results.xml'
         displayName: UI Test - Publish Result    
 
-      - task: CopyFiles@2
-        displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
-        inputs:
-          SourceFolder: public
-          TargetFolder: $(Build.ArtifactStagingDirectory)
-      - task: PublishBuildArtifacts@1
-        displayName: 'Artifact - Publish Artifact: drop'
-        inputs:
-          ArtifactName: drop        
+      #- task: CopyFiles@2
+      #  displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
+      #  inputs:
+      #    SourceFolder: public
+      #    TargetFolder: $(Build.ArtifactStagingDirectory)
+      #- task: PublishBuildArtifacts@1
+      #  displayName: 'Artifact - Publish Artifact: drop'
+      #  inputs:
+      #    ArtifactName: drop        
   
 - stage: Release
   dependsOn: Build
   jobs:
-    - job: Validation
-      displayName: Validation
-      pool: server    
-      timeoutInMinutes: 4320 # job times out in 3 days   
-      steps:   
-      - task: ManualValidation@0
-        timeoutInMinutes: 2880 # task times out in 1 day
-        inputs:
-            notifyUsers: isaac.teh@ust-global.com
-            instructions: 'Please validate the build configuration and resume'
-            onTimeout: 'resume'   
+    #- job: Validation
+    #  displayName: Validation
+    #  pool: server    
+    #  timeoutInMinutes: 4320 # job times out in 3 days   
+    #  steps:   
+    #  - task: ManualValidation@0
+    #    timeoutInMinutes: 2880 # task times out in 1 day
+    #    inputs:
+    #        notifyUsers: isaac.teh@ust-global.com
+    #        instructions: 'Please validate the build configuration and resume'
+    #        onTimeout: 'resume'   
     - job: DeploytoAWS
       displayName: Deploy to AWS  
       dependsOn: Validation
