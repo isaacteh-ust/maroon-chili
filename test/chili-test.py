@@ -24,5 +24,8 @@ class TestTest():
   def test_test(self):
     self.driver.get("http://172.17.0.1:8080")    
     print('open the site')
-    self.driver.save_screenshot("screenshot/home.png")
-  
+    self.driver.save_screenshot("home.png")
+
+  def test_attachment(add_nunit_attachment):
+    add_nunit_attachment("home.png", "peanut butter jelly time")
+    assert 1 == 1  
