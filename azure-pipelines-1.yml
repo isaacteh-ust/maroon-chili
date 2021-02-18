@@ -81,15 +81,6 @@ stages:
           ArtifactName: drop  
 
   - job: Testing
-    dependsOn: 
-      - GatsbyBuild
-      - JekyllBuild
-    condition: |
-      and
-      (
-        eq(dependencies.GatsbyBuild.result, 'Succeeded'),
-        in(dependencies.JekyllBuild.result, 'Succeeded', 'Skipped')
-      )
     steps:
       - task: DownloadBuildArtifacts@0
         inputs:
