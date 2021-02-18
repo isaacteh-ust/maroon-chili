@@ -17,9 +17,10 @@ pool:
   vmImage: 'ubuntu-18.04'
 
 stages:
-- stage: Build
+- stage: build
   jobs:
   - job: jekyll_build
+    displayName: Gatsby Build
     condition: eq(variables.SSG, 'jekyll')
     steps:
       - task: UseRubyVersion@0
@@ -52,6 +53,7 @@ stages:
           ArtifactName: drop         
         
   - job: gatsby_build
+    displayName: Gatsby Build
     condition: eq(variables.SSG, 'gatsby')
     steps:        
       - task: NodeTool@0
@@ -201,6 +203,7 @@ stages:
           ArtifactName: drop        
   
 - stage: Release
+  dependsOn: build
   jobs:
     - job: Validation
       displayName: Validation
