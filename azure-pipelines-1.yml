@@ -113,11 +113,11 @@ stages:
         inputs:
           pollingTimeoutSec: '300'
         displayName: SAST - SonarCloud Publish
-      - task: sonarcloud-buildbreaker@2
-        inputs:
-          SonarCloud: 'SwiftSight'
-          organization: 'isaacteh' 
-        displayName: 'SAST - SonarCloud Breaker'     
+      #- task: sonarcloud-buildbreaker@2
+      #  inputs:
+      #    SonarCloud: 'SwiftSight'
+      #    organization: 'isaacteh' 
+      #  displayName: 'SAST - SonarCloud Breaker'     
       - task: DockerInstaller@0
         inputs:
           dockerVersion: '17.09.0-ce'
