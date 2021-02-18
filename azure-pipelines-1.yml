@@ -88,7 +88,7 @@ stages:
       and
       (
         eq(dependencies.GatsbyBuild.result, 'Succeeded'),
-        in(dependencies.Jekyll.result, 'Succeeded', 'Skipped')
+        in(dependencies.JekyllBuild.result, 'Succeeded', 'Skipped')
       )
     steps:
       - task: DownloadBuildArtifacts@0
