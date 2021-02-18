@@ -32,7 +32,7 @@ stages:
         displayName: 'Build - Bundle install'
         inputs:
           script: |
-            gem install jekyll
+            gem install jekyll111
             gem install bundler:1.16.6
            
       - task: CmdLine@2
