@@ -17,10 +17,10 @@ pool:
   vmImage: 'ubuntu-18.04'
 
 stages:
-- stage: build
+- stage: Build
   jobs:
   - job: JekyllBuild
-    displayName: Gatsby Build
+    displayName: Jekyll Build
     condition: eq(variables.SSG, 'jekyll')
     steps:
       - task: UseRubyVersion@0
@@ -87,7 +87,7 @@ stages:
     condition: |
       and
       (
-        eq(dependencies.GatsbyBuild.result, 'Succeeded'),
+        eq(dependencies.GatsbyBuild.result, 'Succeeded','Skipped'),
         in(dependencies.JekyllBuild.result, 'Succeeded', 'Skipped')
       )
     steps:
@@ -209,7 +209,7 @@ stages:
           ArtifactName: drop        
   
 - stage: Release
-  dependsOn: build
+  dependsOn: Build
   jobs:
     - job: Validation
       displayName: Validation
