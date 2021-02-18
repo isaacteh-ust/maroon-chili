@@ -19,7 +19,7 @@ pool:
 stages:
 - stage: build
   jobs:
-  - job: jekyll_build
+  - job: JekyllBuild
     displayName: Gatsby Build
     condition: eq(variables.SSG, 'jekyll')
     steps:
@@ -52,7 +52,7 @@ stages:
         inputs:
           ArtifactName: drop         
         
-  - job: gatsby_build
+  - job: GatsbyBuild
     displayName: Gatsby Build
     condition: eq(variables.SSG, 'gatsby')
     steps:        
@@ -82,8 +82,14 @@ stages:
 
   - job: Testing
     dependsOn: 
-      - gatsby_build
-      - jekyll_build
+      - GatsbyBuild
+      - JekyllBuild
+    condition: |
+      and
+      (
+        eq(dependencies.GatsbyBuild.result, 'Succeeded'),
+        in(dependencies.Jekyll.result, 'Succeeded', 'Skipped')
+      )
     steps:
       - task: DownloadBuildArtifacts@0
         inputs:
@@ -205,17 +211,17 @@ stages:
 - stage: Release
   dependsOn: build
   jobs:
-    - job: Validation
-      displayName: Validation
-      pool: server    
-      timeoutInMinutes: 4320 # job times out in 3 days   
-      steps:   
-      - task: ManualValidation@0
-        timeoutInMinutes: 2880 # task times out in 1 day
-        inputs:
-            notifyUsers: isaac.teh@ust-global.com
-            instructions: 'Please validate the build configuration and resume'
-            onTimeout: 'resume'   
+    #- job: Validation
+    #  displayName: Validation
+    #  pool: server    
+    #  timeoutInMinutes: 4320 # job times out in 3 days   
+    #  steps:   
+    #  - task: ManualValidation@0
+    #    timeoutInMinutes: 2880 # task times out in 1 day
+    #    inputs:
+    #        notifyUsers: isaac.teh@ust-global.com
+    #        instructions: 'Please validate the build configuration and resume'
+    #        onTimeout: 'resume'   
     - job: DeploytoAWS
       displayName: Deploy to AWS  
       dependsOn: Validation
