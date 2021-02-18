@@ -1,0 +1,24 @@
+trigger:
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: 'ubuntu-18.04'
+
+stages:
+- stage: Build
+  jobs:
+  - job: Testing
+    steps:
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: 'junit/test-results.xml'
+        displayName: UI Test - Publish Result
+      - task: CmdLine@2
+        inputs:
+          script: 'curl -X POST -d '{"fileName": "screenshot.png",  "attachmentType": "GeneralAttachment"}' "https://dev.azure.com/159647/Test-Project/_apis/test/Runs/98/attachments?api-version=6.0-preview.1"'
+
+      
+  

@@ -1,0 +1,235 @@
+trigger:
+  branches:
+    include:
+    - master
+
+variables:
+  - name: 'PROJECT_NAME'
+    value: 'maroon-chili'
+
+  - name: 'DEPLOYMENT_PLATFORM'
+    value: 'aws'
+
+  - name: 'SSG'
+    value: 'jekyll'
+
+pool:
+  vmImage: 'ubuntu-18.04'
+
+stages:
+- stage: Build
+  jobs:
+  - job: JekyllBuild
+    displayName: Jekyll Build
+    condition: eq(variables.SSG, 'jekyll')
+    steps:
+      - task: UseRubyVersion@0
+        inputs:
+          versionSpec: '>= 2.2 < 2.6'
+        displayName: 'Build - Install Ruby'
+        
+      - task: CmdLine@2
+        displayName: 'Build - Bundle install'
+        inputs:
+          script: |
+            gem install jekyll111
+            gem install bundler:1.16.6
+           
+      - task: CmdLine@2
+        displayName: 'Build - Jekyll build'
+        inputs:
+          script: |
+            bundle install --retry=3 --jobs=4
+            bundle exec jekyll b -d public
+
+      - task: CopyFiles@2
+        displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
+        inputs:
+          SourceFolder: public
+          TargetFolder: $(Build.ArtifactStagingDirectory)
+      - task: PublishBuildArtifacts@1
+        displayName: 'Artifact - Publish Artifact: drop'
+        inputs:
+          ArtifactName: drop         
+        
+  - job: GatsbyBuild
+    displayName: Gatsby Build
+    condition: eq(variables.SSG, 'gatsby')
+    steps:        
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '12.x'
+        displayName: 'Build - Install Node'  
+          
+      - script: |
+          npm install -g gatsby-cli
+          npm install
+        displayName: 'Build - Npm Install'
+        
+      - script: | 
+          gatsby build
+        displayName: 'Build - Gatsby Build' 
+
+      - task: CopyFiles@2
+        displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
+        inputs:
+          SourceFolder: public
+          TargetFolder: $(Build.ArtifactStagingDirectory)
+      - task: PublishBuildArtifacts@1
+        displayName: 'Artifact - Publish Artifact: drop'
+        inputs:
+          ArtifactName: drop  
+
+  - job: Testing
+    dependsOn: 
+      - GatsbyBuild
+      - JekyllBuild
+    condition: |
+      or
+      (
+        in(dependencies.GatsbyBuild.result, 'Succeeded', 'Skipped'),
+        in(dependencies.JekyllBuild.result, 'Succeeded', 'Skipped')
+      )
+    steps:
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'current'
+          downloadType: 'single'
+          artifactName: 'drop'
+          downloadPath: '$(System.ArtifactsDirectory)'
+      - task: SonarCloudPrepare@1
+        inputs:
+          SonarCloud: 'SwiftSight'
+          organization: 'isaacteh'
+          scannerMode: 'CLI'
+          configMode: 'manual'
+          cliProjectKey: ${{ variables.PROJECT_NAME }}
+          cliProjectName: ${{ variables.PROJECT_NAME }}
+          cliSources: '.'
+        displayName: 'SAST - SonarCloud Prepare'
+      - task: SonarCloudAnalyze@1
+        displayName: 'SAST - SonarCloud Analyze'
+      - task: SonarCloudPublish@1
+        inputs:
+          pollingTimeoutSec: '300'
+        displayName: SAST - SonarCloud Publish
+      - task: sonarcloud-buildbreaker@2
+        inputs:
+          SonarCloud: 'SwiftSight'
+          organization: 'isaacteh' 
+        displayName: 'SAST - SonarCloud Breaker'     
+      - task: DockerInstaller@0
+        inputs:
+          dockerVersion: '17.09.0-ce'
+        displayName: 'DAST - Install Docker'
+      - task: CmdLine@2
+        displayName: 'DAST - Deploy to Docker Container'
+        inputs:
+          script: |
+            ls -lrt $(System.ArtifactsDirectory)
+            chmod -R 777 $(System.ArtifactsDirectory)/drop
+            docker run --rm --volume="$(System.ArtifactsDirectory)/drop:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4
+            netstat -tlpen | grep 8080
+            curl -v http://172.17.0.1:8080 --retry 3
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: "chmod -R 777  ./\ndocker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t   http://172.17.0.1:8080 -g gen.conf -x OWASP-ZAP-Report.xml -r scan-report.html\ntrue \n"
+        displayName: 'DAST - OWASP Scan'
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            $XslPath = "$($Env:SYSTEM_DEFAULTWORKINGDIRECTORY)/test/OWASPToNUnit3.xslt"
+            $XmlInputPath = "$($Env:SYSTEM_DEFAULTWORKINGDIRECTORY)/OWASP-ZAP-Report.xml"
+            $XmlOutputPath = "$($Env:SYSTEM_DEFAULTWORKINGDIRECTORY)/Converted-OWASP-ZAP-Report.xml"
+            $XslTransform = New-Object System.Xml.Xsl.XslCompiledTransform
+            $XslTransform.Load($XslPath)
+            $XslTransform.Transform($XmlInputPath, $XmlOutputPath)
+        displayName: 'DAST - Convert Report to NUnit type file'
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'NUnit'
+          testResultsFiles: 'Converted-OWASP-ZAP-Report.xml'
+        displayName: 'DAST - Publish Report'        
+
+    #  - task: Npm@1
+    #    inputs:
+    #      command: 'install'
+    #      workingDir: '$(System.DefaultWorkingDirectory)'
+    #    displayName: 'UI Test - Npm install'
+    #  - task: CmdLine@2
+    #    inputs:
+    #      script: |
+    #        wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
+    #        unzip chromedriver_linux64.zip
+    #        sudo mv chromedriver /usr/bin
+    #        rm chromedriver_linux64.zip
+    #    displayName: 'UI Test - Install Chromedriver'
+    #  - task: CmdLine@2
+    #    inputs:
+    #      script: 'npm test'
+    #    displayName: 'UI Test - Run UI Test'
+    #  - task: PublishTestResults@2
+    #    inputs:
+    #      testResultsFormat: 'JUnit'
+    #      testResultsFiles: 'test-results.xml'
+    #    displayName: 'UI Test - Publish Result'
+
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.x'
+          addToPath: true
+          architecture: 'x64'
+        displayName: UI Test - Install Python  
+      - task: CmdLine@2
+        inputs:
+          script: |
+            python -m pip install --upgrade pip
+            pip install selenium pytest pytest-cov pytest-azurepipelines
+            pip install webdriver-manager
+        displayName: UI Test - Install Chromedriver   
+      - task: CmdLine@2
+        inputs:
+          script: 'pytest "$(pwd)/test/chili-test.py" --cov my_project --cov-report html'
+          #script: 'pytest "$(pwd)/test/chili-test.py" --junitxml=junit/test-results.xml'
+        displayName: UI Test - Run UI Test
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: 'junit/test-results.xml'
+        displayName: UI Test - Publish Result    
+
+      #- task: CopyFiles@2
+      #  displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
+      #  inputs:
+      #    SourceFolder: public
+      #    TargetFolder: $(Build.ArtifactStagingDirectory)
+      #- task: PublishBuildArtifacts@1
+      #  displayName: 'Artifact - Publish Artifact: drop'
+      #  inputs:
+      #    ArtifactName: drop        
+  
+- stage: Release
+  dependsOn: Build
+  jobs:
+    #- job: Validation
+    #  displayName: Validation
+    #  pool: server    
+    #  timeoutInMinutes: 4320 # job times out in 3 days   
+    #  steps:   
+    #  - task: ManualValidation@0
+    #    timeoutInMinutes: 2880 # task times out in 1 day
+    #    inputs:
+    #        notifyUsers: isaac.teh@ust-global.com
+    #        instructions: 'Please validate the build configuration and resume'
+    #        onTimeout: 'resume'   
+    - job: DeploytoAWS
+      displayName: Deploy to AWS  
+      #dependsOn: Validation
+      steps:
+      - checkout: none
+      - task: CmdLine@2
+        inputs:
+          script: 'curl -X POST -d {} "https://webhooks.amplify.ap-southeast-1.amazonaws.com/prod/webhooks?id=31cec3c0-f9fd-414d-b6d8-d3eef0572d9b&token=se6pzDqRP9Tsm4zvYhB0yfX69syZC03HBefPLeP9nMM&operation=startbuild" -H "Content-Type:application/json"'
+        displayName: Deploy to AWS

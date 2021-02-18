@@ -9,10 +9,13 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.chrome.options import Options  
 
 class TestTest():
   def setup_method(self, method):
-    self.driver = webdriver.Chrome()
+    chrome_options = Options()  
+    chrome_options.add_argument("--headless")  
+    self.driver = webdriver.Chrome(chrome_options=chrome_options)
     self.vars = {}
   
   def teardown_method(self, method):
@@ -21,11 +24,5 @@ class TestTest():
   def test_test(self):
     self.driver.get("http://172.17.0.1:8080")    
     print('open the site')
-    self.driver.save_screenshot("home.png")
-    self.driver.find_element_by_xpath('//*[@id="main-navigation"]/div/ul/li[2]').click()
-    print('open docs')
-    self.driver.save_screenshot("docs.png")
-    self.driver.find_element_by_xpath('//*[@id="docs-menu"]/li[2]').click()
-    print('open about')
-    self.driver.save_screenshot("about.png")
+    self.driver.save_screenshot("screenshot/home.png")
   
