@@ -1,7 +1,7 @@
-trigger:
-  branches:
-    include:
-    - master
+trigger: none
+  #branches:
+  #  include:
+  #  - master
 
 variables:
   - name: 'PROJECT_NAME'
