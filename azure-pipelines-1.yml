@@ -19,41 +19,74 @@ pool:
 stages:
 - stage: Build
   jobs:
-  - job: Build
+  - job: jekyll_build
+    condition: eq(variables.SSG, 'jekyll')
     steps:
       - task: UseRubyVersion@0
         inputs:
           versionSpec: '>= 2.2 < 2.6'
         displayName: 'Build - Install Ruby'
-        condition: eq(variables.SSG, 'jekyll')
+        
       - task: CmdLine@2
         displayName: 'Build - Bundle install'
         inputs:
           script: |
             gem install jekyll
             gem install bundler:1.16.6
-        condition: eq(variables.SSG, 'jekyll')    
+           
       - task: CmdLine@2
         displayName: 'Build - Jekyll build'
         inputs:
           script: |
             bundle install --retry=3 --jobs=4
             bundle exec jekyll b -d public
-        condition: eq(variables.SSG, 'jekyll')
+
+      - task: CopyFiles@2
+        displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
+        inputs:
+          SourceFolder: public
+          TargetFolder: $(Build.ArtifactStagingDirectory)
+      - task: PublishBuildArtifacts@1
+        displayName: 'Artifact - Publish Artifact: drop'
+        inputs:
+          ArtifactName: drop         
+        
+  - job: gatsby_build
+    condition: eq(variables.SSG, 'gatsby')
+    steps:        
       - task: NodeTool@0
         inputs:
           versionSpec: '12.x'
         displayName: 'Build - Install Node'  
-        condition: eq(variables.SSG, 'gatsby')  
+          
       - script: |
           npm install -g gatsby-cli
           npm install
         displayName: 'Build - Npm Install'
-        condition: eq(variables.SSG, 'gatsby')
+        
       - script: | 
           gatsby build
-        displayName: 'Build - Gatsby Build'  
-        condition: eq(variables.SSG, 'gatsby')                       
+        displayName: 'Build - Gatsby Build' 
+
+      - task: CopyFiles@2
+        displayName: 'Artifact - Copy _site to: $(Build.ArtifactStagingDirectory)'
+        inputs:
+          SourceFolder: public
+          TargetFolder: $(Build.ArtifactStagingDirectory)
+      - task: PublishBuildArtifacts@1
+        displayName: 'Artifact - Publish Artifact: drop'
+        inputs:
+          ArtifactName: drop  
+
+  - job: Testing
+    dependsOn: gatsby_build | jekyll_build
+    steps:
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'current'
+          downloadType: 'single'
+          artifactName: 'drop'
+          downloadPath: '$(System.ArtifactsDirectory)'
       - task: SonarCloudPrepare@1
         inputs:
           SonarCloud: 'SwiftSight'
