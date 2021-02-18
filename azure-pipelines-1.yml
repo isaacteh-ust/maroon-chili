@@ -1,7 +1,7 @@
-trigger: none
-  #branches:
-  #  include:
-  #  - master
+trigger: 
+  branches:
+    include:
+    - master
 
 variables:
   - name: 'PROJECT_NAME'
@@ -186,14 +186,18 @@ stages:
         inputs:
           script: |
             python -m pip install --upgrade pip
-            pip install selenium pytest pytest-cov pytest-azurepipelines
+            pip install selenium pytest pytest-cov pytest-azurepipelines pytest-nunit
             pip install webdriver-manager
         displayName: UI Test - Install Chromedriver   
       - task: CmdLine@2
         inputs:
-          script: 'pytest "$(pwd)/test/chili-test.py" --cov my_project --cov-report html'
+          script: 'python -m pytest $(pwd)/test/chili-test.py -v --nunit-xml=test-results.xml'
+          #script: 'pytest "$(pwd)/test/chili-test.py" --cov my_project --cov-report html'
           #script: 'pytest "$(pwd)/test/chili-test.py" --junitxml=junit/test-results.xml'
         displayName: UI Test - Run UI Test
+      - task: CmdLine@2
+        inputs:
+          script: 'ls -lrt'
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: 'JUnit'
