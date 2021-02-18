@@ -224,7 +224,7 @@ stages:
     #        onTimeout: 'resume'   
     - job: DeploytoAWS
       displayName: Deploy to AWS  
-      dependsOn: Validation
+      #dependsOn: Validation
       steps:
       - checkout: none
       - task: CmdLine@2
