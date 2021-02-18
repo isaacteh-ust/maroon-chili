@@ -126,8 +126,9 @@ stages:
         displayName: 'DAST - Deploy to Docker Container'
         inputs:
           script: |
-            chmod -R 777 $(pwd)/drop
-            docker run --rm --volume="$(pwd)/drop:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4
+            ls -lrt $(System.ArtifactsDirectory)
+            chmod -R 777 $(System.ArtifactsDirectory)/drop
+            docker run --rm --volume="$(System.ArtifactsDirectory)/drop:/usr/local/apache2/htdocs" -p 8080:80 -dit httpd:2.4
             netstat -tlpen | grep 8080
             curl -v http://172.17.0.1:8080 --retry 3
       - task: Bash@3
