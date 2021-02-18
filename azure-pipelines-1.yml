@@ -191,7 +191,7 @@ stages:
         displayName: UI Test - Install Chromedriver   
       - task: CmdLine@2
         inputs:
-        script: 'pytest "$(pwd)/test/chili-test.py" --cov my_project --cov-report html'
+          script: 'pytest "$(pwd)/test/chili-test.py" --cov my_project --cov-report html'
           #script: 'pytest "$(pwd)/test/chili-test.py" --junitxml=junit/test-results.xml'
         displayName: UI Test - Run UI Test
       - task: PublishTestResults@2
