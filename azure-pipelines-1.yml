@@ -85,9 +85,9 @@ stages:
       - GatsbyBuild
       - JekyllBuild
     condition: |
-      and
+      or
       (
-        eq(dependencies.GatsbyBuild.result, 'Succeeded','Skipped'),
+        in(dependencies.GatsbyBuild.result, 'Succeeded', 'Skipped'),
         in(dependencies.JekyllBuild.result, 'Succeeded', 'Skipped')
       )
     steps:
