@@ -79,7 +79,9 @@ stages:
           ArtifactName: drop  
 
   - job: Testing
-    dependsOn: gatsby_build | jekyll_build
+    dependsOn: 
+      - gatsby_build
+      - jekyll_build
     steps:
       - task: DownloadBuildArtifacts@0
         inputs:
