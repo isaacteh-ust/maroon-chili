@@ -20,7 +20,7 @@ steps:
     inputs:
       script: |
         python -m pip install --upgrade pip
-        pip install selenium pytest pytest-cov pytest-azurepipelines pytest-nunit
+        pip install selenium pytest pytest-nunit
         pip install webdriver-manager
     displayName: UI Test - Install Chromedriver   
   - task: CmdLine@2
@@ -31,9 +31,11 @@ steps:
     displayName: UI Test - Run UI Test
   - task: CmdLine@2
     inputs:
-      script: 'ls -lrt'
+      script: |
+        ls -lrt
+        pwd
   - task: PublishTestResults@2
     inputs:
-      testResultsFormat: 'JUnit'
-      testResultsFiles: 'junit/test-results.xml'
+      testResultsFormat: 'NUnit'
+      testResultsFiles: '**/test-results.xml'
     displayName: UI Test - Publish Result   
