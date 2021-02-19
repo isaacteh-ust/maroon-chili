@@ -23,8 +23,8 @@ class TestTest():
     self.driver.quit()
   
   def test_test(self):
-    self.driver.get("http://172.17.0.1:8080")    
+    self.driver.get("https://maroon-chili-27bd3.netlify.app/")    
     print('open the site')
     self.driver.save_screenshot("home.png")
-    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "home.png")
-    add_nunit_attachment(path, "peanut butter jelly time")
+    #path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "home.png")
+    #add_nunit_attachment(path, "peanut butter jelly time")
