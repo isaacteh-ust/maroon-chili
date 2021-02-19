@@ -31,9 +31,12 @@ steps:
     displayName: UI Test - Run UI Test
   - task: CmdLine@2
     inputs:
-      script: 'ls -lrt'
+      script: |
+        ls -lrt
+        cat test-results.xml
+        pwd
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: 'test-results.xml'
+      testResultsFiles: '**/test-results.xml'
     displayName: UI Test - Publish Result   
