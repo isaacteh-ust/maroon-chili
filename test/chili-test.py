@@ -2,6 +2,7 @@
 import os
 import pytest
 import time
+import pytest-nunit
 import json
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -26,5 +27,5 @@ class TestTest():
     self.driver.get("https://maroon-chili-27bd3.netlify.app/")    
     print('open the site')
     self.driver.save_screenshot("home.png")
-    #path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "home.png")
-    #add_nunit_attachment(path, "peanut butter jelly time")
+    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "home.png")
+    add_nunit_attachment(path, "peanut butter jelly time")
