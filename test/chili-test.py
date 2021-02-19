@@ -25,7 +25,7 @@ class TestTest():
   def test_test(self, add_nunit_attachment):
     self.driver.get("https://maroon-chili-27bd3.netlify.app/")    
     print('open the site')
-    self.driver.save_screenshot("/test/home.png")
+    self.driver.save_screenshot("test/home.png")
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "home.png")
     print(path)
     add_nunit_attachment(path, "peanut butter jelly time")
