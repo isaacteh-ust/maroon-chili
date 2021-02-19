@@ -35,5 +35,5 @@ steps:
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: 'junit/test-results.xml'
+      testResultsFiles: 'test-results.xml'
     displayName: UI Test - Publish Result   
