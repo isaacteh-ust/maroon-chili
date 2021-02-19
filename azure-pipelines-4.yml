@@ -36,6 +36,6 @@ steps:
         pwd
   - task: PublishTestResults@2
     inputs:
-      testResultsFormat: 'JUnit'
+      testResultsFormat: 'NUnit'
       testResultsFiles: '**/test-results.xml'
     displayName: UI Test - Publish Result   
