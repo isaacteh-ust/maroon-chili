@@ -27,4 +27,5 @@ class TestTest():
     print('open the site')
     self.driver.save_screenshot("home.png")
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "home.png")
+    print(path)
     add_nunit_attachment(path, "peanut butter jelly time")
