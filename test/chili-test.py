@@ -2,7 +2,6 @@
 import os
 import pytest
 import time
-import pytest-nunit
 import json
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -23,7 +22,7 @@ class TestTest():
   def teardown_method(self, method):
     self.driver.quit()
   
-  def test_test(self):
+  def test_test(self, add_nunit_attachment):
     self.driver.get("https://maroon-chili-27bd3.netlify.app/")    
     print('open the site')
     self.driver.save_screenshot("home.png")
