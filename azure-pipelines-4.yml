@@ -33,6 +33,7 @@ steps:
     inputs:
       script: |
         ls -lrt
+        ls -lrt test
         pwd
   - task: PublishTestResults@2
     inputs:
