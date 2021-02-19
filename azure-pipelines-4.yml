@@ -20,7 +20,7 @@ steps:
     inputs:
       script: |
         python -m pip install --upgrade pip
-        pip install selenium pytest pytest-cov pytest-azurepipelines pytest-nunit
+        pip install selenium pytest pytest-nunit
         pip install webdriver-manager
     displayName: UI Test - Install Chromedriver   
   - task: CmdLine@2
