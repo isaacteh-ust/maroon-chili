@@ -1,7 +1,7 @@
 trigger: none
-  #branches:
-  #  include:
-  #  - master
+  branches:
+    include:
+    - master
 
 variables:
   - name: 'PROJECT_NAME'
@@ -153,29 +153,6 @@ stages:
           testResultsFiles: 'Converted-OWASP-ZAP-Report.xml'
         displayName: 'DAST - Publish Report'        
 
-    #  - task: Npm@1
-    #    inputs:
-    #      command: 'install'
-    #      workingDir: '$(System.DefaultWorkingDirectory)'
-    #    displayName: 'UI Test - Npm install'
-    #  - task: CmdLine@2
-    #    inputs:
-    #      script: |
-    #        wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
-    #        unzip chromedriver_linux64.zip
-    #        sudo mv chromedriver /usr/bin
-    #        rm chromedriver_linux64.zip
-    #    displayName: 'UI Test - Install Chromedriver'
-    #  - task: CmdLine@2
-    #    inputs:
-    #      script: 'npm test'
-    #    displayName: 'UI Test - Run UI Test'
-    #  - task: PublishTestResults@2
-    #    inputs:
-    #      testResultsFormat: 'JUnit'
-    #      testResultsFiles: 'test-results.xml'
-    #    displayName: 'UI Test - Publish Result'
-
       - task: UsePythonVersion@0
         inputs:
           versionSpec: '3.x'
@@ -186,7 +163,7 @@ stages:
         inputs:
           script: |
             python -m pip install --upgrade pip
-            pip install selenium pytest pytest-cov pytest-azurepipelines pytest-nunit
+            pip install selenium pytest pytest-nunit
             pip install webdriver-manager
         displayName: UI Test - Install Chromedriver   
       - task: CmdLine@2
@@ -195,13 +172,15 @@ stages:
           #script: 'pytest "$(pwd)/test/chili-test.py" --cov my_project --cov-report html'
           #script: 'pytest "$(pwd)/test/chili-test.py" --junitxml=junit/test-results.xml'
         displayName: UI Test - Run UI Test
+        continueOnError: true
       - task: CmdLine@2
         inputs:
-          script: 'ls -lrt'
+          script: |
+            ls -lrt
       - task: PublishTestResults@2
         inputs:
-          testResultsFormat: 'JUnit'
-          testResultsFiles: 'junit/test-results.xml'
+          testResultsFormat: 'NUnit'
+          testResultsFiles: '**/test-results.xml'
         displayName: UI Test - Publish Result    
 
       #- task: CopyFiles@2
@@ -217,20 +196,20 @@ stages:
 - stage: Release
   dependsOn: Build
   jobs:
-    #- job: Validation
-    #  displayName: Validation
-    #  pool: server    
-    #  timeoutInMinutes: 4320 # job times out in 3 days   
-    #  steps:   
-    #  - task: ManualValidation@0
-    #    timeoutInMinutes: 2880 # task times out in 1 day
-    #    inputs:
-    #        notifyUsers: isaac.teh@ust-global.com
-    #        instructions: 'Please validate the build configuration and resume'
-    #        onTimeout: 'resume'   
+    - job: Validation
+      displayName: Validation
+      pool: server    
+      timeoutInMinutes: 4320 # job times out in 3 days   
+      steps:   
+      - task: ManualValidation@0
+        timeoutInMinutes: 2880 # task times out in 1 day
+        inputs:
+            notifyUsers: isaac.teh@ust-global.com
+            instructions: 'Please validate the build configuration and resume'
+            onTimeout: 'resume'   
     - job: DeploytoAWS
       displayName: Deploy to AWS  
-      #dependsOn: Validation
+      dependsOn: Validation
       steps:
       - checkout: none
       - task: CmdLine@2
