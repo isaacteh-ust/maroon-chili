@@ -50,7 +50,7 @@ class TestTest():
     self.driver.set_window_size(1440, 795)
     self.driver.get("https://maroon-chili-27bd3.netlify.app/")
     elements = self.driver.find_elements(By.ID, "sample")
-    assert len(elements) == sample
+    assert len(elements) == "sample"
     self.driver.save_screenshot("test/sample.png")
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample.png")
     add_nunit_attachment(path, "sample")
