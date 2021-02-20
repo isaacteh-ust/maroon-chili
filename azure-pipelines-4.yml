@@ -29,6 +29,7 @@ steps:
       #script: 'pytest "$(pwd)/test/chili-test.py" --cov my_project --cov-report html'
       #script: 'pytest "$(pwd)/test/chili-test.py" --junitxml=junit/test-results.xml'
     displayName: UI Test - Run UI Test
+    continueOnError: true
   - task: CmdLine@2
     inputs:
       script: |
