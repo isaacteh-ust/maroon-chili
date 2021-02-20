@@ -45,3 +45,12 @@ class TestTest():
     self.driver.save_screenshot("test/blog.png")
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "blog.png")
     add_nunit_attachment(path, "blog")
+
+  def test_samples(self, add_nunit_attachment):
+    self.driver.set_window_size(1440, 795)
+    self.driver.get("https://maroon-chili-27bd3.netlify.app/")
+    self.driver.find_element(By.LINK_TEXT, "Sample").click()
+    self.driver.save_screenshot("test/sample.png")
+    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample.png")
+    add_nunit_attachment(path, "sample")
+
