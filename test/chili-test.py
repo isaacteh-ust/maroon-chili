@@ -11,6 +11,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.chrome.options import Options  
+from selenium.common.exceptions import NoSuchElementException
 
 class TestTest():
   def setup_method(self, method):
@@ -47,11 +48,13 @@ class TestTest():
     add_nunit_attachment(path, "blog")
 
   def test_samples(self, add_nunit_attachment):
-    self.driver.set_window_size(1440, 795)
-    self.driver.get("https://maroon-chili-27bd3.netlify.app/")
-    elements = self.driver.find_elements(By.ID, "sample")
-    assert len(elements) == "sample"
-    self.driver.save_screenshot("test/sample.png")
-    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample.png")
-    add_nunit_attachment(path, "sample")
-
+    try:
+        self.driver.set_window_size(1440, 795)
+        self.driver.get("https://maroon-chili-27bd3.netlify.app/")
+        elements = self.driver.find_elements(By.ID, "sample")
+        assert len(elements) == "sample"
+        self.driver.save_screenshot("test/sample.png")
+        path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample.png")
+        add_nunit_attachment(path, "sample")
+    except Exception as e:
+        raise
