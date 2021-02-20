@@ -39,14 +39,6 @@ class TestTest():
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "getstarted.png")
     add_nunit_attachment(path, "getstarted")
 
-  def test_blog(self, add_nunit_attachment):
-    self.driver.set_window_size(1440, 795)
-    self.driver.get("https://maroon-chili-27bd3.netlify.app/")
-    self.driver.find_element(By.LINK_TEXT, "Blog").click()
-    self.driver.save_screenshot("test/blog.png")
-    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "blog.png")
-    add_nunit_attachment(path, "blog")
-
   def test_samples(self, add_nunit_attachment):
     try:
         self.driver.set_window_size(1440, 795)
@@ -58,3 +50,13 @@ class TestTest():
         add_nunit_attachment(path, "sample")
     except Exception as e:
         raise
+
+  def test_blog(self, add_nunit_attachment):
+    self.driver.set_window_size(1440, 795)
+    self.driver.get("https://maroon-chili-27bd3.netlify.app/")
+    self.driver.find_element(By.LINK_TEXT, "Blog").click()
+    self.driver.save_screenshot("test/blog.png")
+    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "blog.png")
+    add_nunit_attachment(path, "blog")
+
+
